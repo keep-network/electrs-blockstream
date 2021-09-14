@@ -16,8 +16,8 @@ WORKDIR /app
 
 COPY --from=builder /build/target/release/electrs .
 
-EXPOSE 3002
-EXPOSE 60401
+EXPOSE 60001
+EXPOSE 3000
 
 STOPSIGNAL SIGINT
 

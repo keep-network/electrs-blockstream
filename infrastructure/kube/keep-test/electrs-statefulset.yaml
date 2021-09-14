@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: electrs-blockstream
+  namespace: default
+  labels:
+    app: electrs-blockstream
+    type: electrs-blockstream
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: electrs-blockstream
+      type: electrs-blockstream
+  serviceName: electrs-blockstream
+  volumeClaimTemplates:
+    - metadata:
+        name: electrs-blockstream-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 100Gi
+  template:
+    metadata:
+      labels:
+        app: electrs-blockstream
+        type: electrs-blockstream
+    spec:
+      containers:
+        - name: electrs-blockstream
+          image: gcr.io/keep-test-f3e0/electrs-blockstream:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 60001
+            - containerPort: 3000
+          env:
+            - name: DAEMON_RPC_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: electrs-btc-connectivity
+                  key: btc-address
+            - name: DAEMON_RPC_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: electrs-btc-connectivity
+                  key: btc-user
+            - name: DAEMON_RPC_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: bcoin
+                  key: http-api-key
+          volumeMounts:
+            - name: electrs-blockstream-data
+              mountPath: /mnt/electrs-blockstream/data
+          command:
+            [
+              "/app/electrs",
+              "-vvvv",
+              "--jsonrpc-import",
+              "--network=testnet",
+              "--db-dir=/mnt/electrs-blockstream/data",
+              "--http-addr=0.0.0.0:3000",
+              "--electrum-rpc-addr=0.0.0.0:60001",
+              "--daemon-rpc-addr=$(DAEMON_RPC_ADDR)",
+              "--cookie=$(DAEMON_RPC_USER):$(DAEMON_RPC_PASS)",
+            ]
+      volumes:
+        - name: electrs-blockstream-data
+          persistentVolumeClaim:
+            claimName: electrs-blockstream-data
