@@ -58,6 +58,7 @@ spec:
             [
               "/app/electrs",
               "-vvvv",
+              "--lightmode",
               "--jsonrpc-import",
               "--network=testnet",
               "--db-dir=/mnt/electrs-blockstream/data",
