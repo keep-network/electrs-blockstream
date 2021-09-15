@@ -1,9 +1,11 @@
-name: Electrs-Blockstream
+name: Bitcoind
 
 on:
   push:
     branches:
       - new-index
+    paths:
+      - "bitcoind/**"
   pull_request:
   workflow_dispatch:
 
@@ -15,16 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         if: github.event_name == 'pull_request'
-
       - uses: dorny/paths-filter@v2
         if: github.event_name == 'pull_request'
         id: filter
         with:
           filters: |
             path-filter:
-              - './!((doc|infrastructure|bitcoind)/**)'
+              - './bitcoind/**'
 
-  build-publish-electrs:
+  build-publish-bitcoind:
     needs: detect-changes
     if: |
       github.event_name != 'pull_request'
@@ -49,27 +50,29 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: /tmp/.buildx-electrs-blockstream-cache
-          key: ${{ runner.os }}-buildx-electrs-blockstream-${{ github.sha }}
+          path: /tmp/.buildx-bitcoind-cache
+          key: ${{ runner.os }}-buildx-bitcoind-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-electrs-blockstream-
+            ${{ runner.os }}-buildx-bitcoind-
 
       - name: Build Docker Build Image
         uses: docker/build-push-action@v2
         with:
+          context: ./bitcoind
           target: builder
-          tags: electrs-build-env
+          tags: bitcoind-build-env
           load: true # load image to local registry to use it in next steps
-          cache-from: type=local,src=/tmp/.buildx-electrs-blockstream-cache
-          cache-to: type=local,dest=/tmp/.buildx-electrs-blockstream-cache-new
+          cache-from: type=local,src=/tmp/.buildx-bitcoind-cache
+          cache-to: type=local,dest=/tmp/.buildx-bitcoind-cache-new
 
       # TODO: Uncomment when development done
       # - name: Build Docker Runtime Image
       #   if: github.event_name != 'workflow_dispatch'
       #   uses: docker/build-push-action@v2
       #   env:
-      #     IMAGE_NAME: 'electrs-blockstream'
+      #     IMAGE_NAME: 'bitcoind'
       #   with:
+      #     context: ./bitcoind
       #     labels: revision=${{ github.sha }}
       #     build-args: |
       #       REVISION=${{ github.sha }}
@@ -89,8 +92,9 @@ jobs:
         # if: github.event_name == 'workflow_dispatch'
         uses: docker/build-push-action@v2
         env:
-          IMAGE_NAME: 'electrs-blockstream'
+          IMAGE_NAME: 'bitcoind'
         with:
+          context: ./bitcoind
           # GCR image should be named according to following convention:
           # HOSTNAME/PROJECT-ID/IMAGE:TAG
           # We don't use TAG yet.
@@ -107,5 +111,5 @@ jobs:
         # Without the change some jobs were failing with `no space left on device`
         name: Move cache
         run: |
-          rm -rf /tmp/.buildx-electrs-blockstream-cache
-          mv /tmp/.buildx-electrs-blockstream-cache-new /tmp/.buildx-electrs-blockstream-cache
+          rm -rf /tmp/.buildx-bitcoind-cache
+          mv /tmp/.buildx-bitcoind-cache-new /tmp/.buildx-bitcoind-cache

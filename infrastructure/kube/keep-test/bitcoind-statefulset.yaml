@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bitcoind
+  namespace: default
+  labels:
+    app: bitcoind
+    type: bitcoind
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitcoind
+      type: bitcoind
+  serviceName: bitcoind
+  volumeClaimTemplates:
+    - metadata:
+        name: bitcoind-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 40Gi
+  template:
+    metadata:
+      labels:
+        app: bitcoind
+        type: bitcoind
+    spec:
+      containers:
+        - name: bitcoind
+          image: gcr.io/keep-test-f3e0/bitcoind:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8332
+            - containerPort: 8333
+          env:
+            - name: RPC_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: bitcoind
+                  key: rpc-user
+            - name: RPC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bitcoind
+                  key: rpc-password
+          volumeMounts:
+            - name: bitcoind-data
+              mountPath: /mnt/bitcoind/data
+          command:
+            [
+              "/app/bitcoind",
+              "-testnet",
+              "-datadir=/mnt/bitcoind/data",
+              "-rpcport=8332",
+              "-port=8333",
+              "-rpcbind=0.0.0.0",
+              "-rpcuser=$(RPC_USER)",
+              "-rpcpassword=$(RPC_PASSWORD)",
+            ]
+      volumes:
+        - name: bitcoind-data
+          persistentVolumeClaim:
+            claimName: bitcoind-data
