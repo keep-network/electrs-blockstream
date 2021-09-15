@@ -8,6 +8,7 @@ metadata:
     app: bitcoind
     type: bitcoind
 spec:
+  type: LoadBalancer
   ports:
   - port: 8332
     targetPort: 8332

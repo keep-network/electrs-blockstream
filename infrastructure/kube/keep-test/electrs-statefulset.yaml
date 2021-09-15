@@ -39,18 +39,18 @@ spec:
             - name: DAEMON_RPC_ADDR
               valueFrom:
                 configMapKeyRef:
-                  name: electrs-btc-connectivity
-                  key: btc-address
+                  name: bitcoind
+                  key: rpc-addr
             - name: DAEMON_RPC_USER
               valueFrom:
                 configMapKeyRef:
-                  name: electrs-btc-connectivity
-                  key: btc-user
+                  name: bitcoind
+                  key: rpc-user
             - name: DAEMON_RPC_PASS
               valueFrom:
                 secretKeyRef:
-                  name: bcoin
-                  key: http-api-key
+                  name: bitcoind
+                  key: rpc-password
           volumeMounts:
             - name: electrs-blockstream-data
               mountPath: /mnt/electrs-blockstream/data
