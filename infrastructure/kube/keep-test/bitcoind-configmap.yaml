@@ -1,0 +1,8 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: bitcoind
+  namespace: default
+data:
+  rpc-user: x
+  rpc-addr: bitcoind.default.svc.cluster.local:8332
