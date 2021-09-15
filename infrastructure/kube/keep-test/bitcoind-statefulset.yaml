@@ -44,8 +44,8 @@ spec:
             - name: RPC_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: bitcoind
-                  key: rpc-password
+                  name: bcoin
+                  key: http-api-key
           volumeMounts:
             - name: bitcoind-data
               mountPath: /mnt/bitcoind/data
@@ -57,6 +57,7 @@ spec:
               "-rpcport=8332",
               "-port=8333",
               "-rpcbind=0.0.0.0",
+              "-rpcallowip=0.0.0.0/0",
               "-rpcuser=$(RPC_USER)",
               "-rpcpassword=$(RPC_PASSWORD)",
             ]

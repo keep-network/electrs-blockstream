@@ -49,8 +49,8 @@ spec:
             - name: DAEMON_RPC_PASS
               valueFrom:
                 secretKeyRef:
-                  name: bitcoind
-                  key: rpc-password
+                  name: bcoin
+                  key: http-api-key
           volumeMounts:
             - name: electrs-blockstream-data
               mountPath: /mnt/electrs-blockstream/data
